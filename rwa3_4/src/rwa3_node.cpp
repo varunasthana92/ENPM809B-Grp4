@@ -29,12 +29,23 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h> //--needed for tf2::Matrix3x3
-
+#include <tf2_ros/transform_listener.h>
 #include "competition.h"
 #include "utils.h"
 #include "gantry_control.h"
 
 #include <tf2/LinearMath/Quaternion.h>
+
+// To store quality sensor model detected
+nist_gear::LogicalCameraImage quality1_model;
+
+void transform_pose(geometry_msgs::Pose input_pose, 
+                    std::string to_frame, 
+                    std::string from_frame) {
+    geometry_msgs::TransformStamped transformStamped;
+    tf2_ros::Buffer tfBuffer;
+    transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_1_frame", ros::Time(0));
+}
 
 void orderCallback(const nist_gear::Order& ordermsg) {
     Order order_recieved;
@@ -57,6 +68,31 @@ void orderCallback(const nist_gear::Order& ordermsg) {
     }
 }
 
+void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
+    quality1_model = msg;
+}
+
+bool checkPartPoseValidity (part part_in_tray, 
+                            nist_gear::LogicalCameraImage quality1_model) {
+    ROS_INFO_STREAM("Order part location to be placed to: " 
+                    << part_in_tray.pose.position.x 
+                    << part_in_tray.pose.position.y
+                    << part_in_tray.pose.position.z
+                    << part_in_tray.pose.orientation.x
+                    << part_in_tray.pose.orientation.y
+                    << part_in_tray.pose.orientation.z
+                    << part_in_tray.pose.orientation.w);
+    ROS_INFO_STREAM("Order part pose detected from quality sensor: " 
+                    << quality1_model.pose.position.x 
+                    << quality1_model.pose.position.y
+                    << quality1_model.pose.position.z
+                    << quality1_model.pose.orientation.x
+                    << quality1_model.pose.orientation.y
+                    << quality1_model.pose.orientation.z
+                    << quality1_model.pose.orientation.w);
+    // Transform pose detected from quality sensor to world frame
+    
+}
 int main(int argc, char ** argv) {
     ros::init(argc, argv, "rwa3_node");
     ros::NodeHandle node;
@@ -70,7 +106,7 @@ int main(int argc, char ** argv) {
     comp.getClock();
 
     ros::Subscriber order_sub = node.subscribe("/ariac/orders", 1000, orderCallback);
-
+    ros::Subscriber quality1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
     GantryControl gantry(node);
     gantry.init();
     gantry.goToPresetLocation(gantry.start_);
@@ -97,8 +133,8 @@ int main(int argc, char ** argv) {
     part part_in_tray;
     part_in_tray.type = "pulley_part_red";
     part_in_tray.pose.position.x = -0.12;
-    part_in_tray.pose.position.x = -0.2;
-    part_in_tray.pose.position.x = 0.0;
+    part_in_tray.pose.position.y = -0.2;
+    part_in_tray.pose.position.z = 0.0;
     part_in_tray.pose.orientation.x = 0.0;
     part_in_tray.pose.orientation.y = 0.0;
     part_in_tray.pose.orientation.z = 0.0;
@@ -108,6 +144,10 @@ int main(int argc, char ** argv) {
     gantry.pickPart(my_part);
     //--Go place the part
     gantry.placePart(part_in_tray, "agv2");
+
+    bool placed_status = checkPartPoseValidity(part_in_tray, quality1_model);
+
+    ROS_INFO_STREAM("Part placed correctly: " << placed_status);
 
     comp.endCompetition();
     spinner.stop();
