@@ -36,14 +36,9 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
-// To store quality sensor model detected
-geometry_msgs::Pose quality1_model;
-
-void transform_pose(geometry_msgs::Pose input_pose, 
-                    std::string to_frame, 
-                    std::string from_frame) {
-    
-}
+// To store logical camera 17 model detected
+geometry_msgs::Pose quality1_model; // Change the name to logical_camera_17_model,
+                                    // do it for all quality1_model instances
 
 void orderCallback(const nist_gear::Order& ordermsg) {
     Order order_recieved;
@@ -66,7 +61,8 @@ void orderCallback(const nist_gear::Order& ordermsg) {
     }
 }
 
-void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
+// Logical camera 17 callback
+void logicalCallback(const nist_gear::LogicalCameraImage& msg) {
     if (msg.models.size() != 0) {
         ROS_INFO_STREAM("Msg not emplty");
         quality1_model = (msg.models[0]).pose;
@@ -74,6 +70,51 @@ void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
         ROS_INFO_STREAM("Msg empty");
 }
 
+// Quality control sensor 1 callback
+void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
+    if (msg.models.size() != 0) {
+        ROS_INFO_STREAM("Detected faulty part!: " << (msg.models[0]).type);
+        geometry_msgs::Pose model_pose = (msg.models[0]).pose;
+        /*
+        ROS_INFO_STREAM("Faulty part pose: " 
+                    << model_pose.position.x << std::endl
+                    << model_pose.position.y << std::endl 
+                    << model_pose.position.z << std::endl
+                    << model_pose.orientation.x << std::endl
+                    << model_pose.orientation.y << std::endl
+                    << model_pose.orientation.z << std::endl
+                    << model_pose.orientation.w);*/
+
+    // Transform pose detected from quality sensor 1 to world frame
+    /* [TODO] Need to refactor this part as seperate function to tranform pose in one
+     reference frame to another (For reusability) */
+    geometry_msgs::TransformStamped transformStamped;
+    tf2_ros::Buffer tfBuffer;
+    tf2_ros::TransformListener tfListener(tfBuffer);
+    ros::Duration timeout(3.0);
+    bool transform_exists = tfBuffer.canTransform("world", "quality_control_sensor_1_frame", ros::Time(0), timeout);
+    if (transform_exists)
+        transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_1_frame", ros::Time(0));
+    else
+        ROS_INFO_STREAM("Cannot transform from quality_control_sensor_1_frame to world");
+    geometry_msgs::PoseStamped new_pose;
+    new_pose.header.seq = 1;
+    new_pose.header.stamp = ros::Time(0);
+    new_pose.header.frame_id = "quality_control_sensor_1_frame";
+    new_pose.pose = model_pose;
+    tf2::doTransform(new_pose, new_pose, transformStamped);
+    ROS_INFO_STREAM("Transformed order part pose detected from quality sensor: " 
+                    << new_pose.pose.position.x << std::endl
+                    << new_pose.pose.position.y << std::endl
+                    << new_pose.pose.position.z << std::endl
+                    << new_pose.pose.orientation.x << std::endl
+                    << new_pose.pose.orientation.y << std::endl
+                    << new_pose.pose.orientation.z << std::endl
+                    << new_pose.pose.orientation.w);
+    }
+}
+
+// Checks the part placed pose validity on AGV2 using logical camera 17
 bool checkPartPoseValidity (geometry_msgs::Pose part_in_tray, 
                             geometry_msgs::Pose quality1_model) {
     ROS_INFO_STREAM("Order part location to be placed to: " 
@@ -92,7 +133,7 @@ bool checkPartPoseValidity (geometry_msgs::Pose part_in_tray,
                     << quality1_model.orientation.y << std::endl
                     << quality1_model.orientation.z << std::endl
                     << quality1_model.orientation.w); 
-    // Transform pose detected from quality sensor to world frame
+    // Transform pose detected from logical camera 17 to world frame
     geometry_msgs::TransformStamped transformStamped;
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener(tfBuffer);
@@ -101,14 +142,14 @@ bool checkPartPoseValidity (geometry_msgs::Pose part_in_tray,
     if (transform_exists)
         transformStamped = tfBuffer.lookupTransform("world", "logical_camera_17_frame", ros::Time(0));
     else
-        ROS_INFO_STREAM("Cannot transform from quality_control_sensor_1_frame to world");
+        ROS_INFO_STREAM("Cannot transform from logical_camera_17_frame to world");
     geometry_msgs::PoseStamped new_pose;
     new_pose.header.seq = 1;
     new_pose.header.stamp = ros::Time(0);
     new_pose.header.frame_id = "logical_camera_17_frame";
     new_pose.pose = quality1_model;
     tf2::doTransform(new_pose, new_pose, transformStamped);
-    ROS_INFO_STREAM("Transformed order part pose detected from quality sensor: " 
+    ROS_INFO_STREAM("Transformed order part pose detected from logical sensor: " 
                     << new_pose.pose.position.x << std::endl
                     << new_pose.pose.position.y << std::endl
                     << new_pose.pose.position.z << std::endl
@@ -138,7 +179,8 @@ int main(int argc, char ** argv) {
     comp.getClock();
 
     ros::Subscriber order_sub = node.subscribe("/ariac/orders", 1000, orderCallback);
-    ros::Subscriber quality1_sub = node.subscribe("/ariac/logical_camera_17", 1000, qualityCallback);
+    ros::Subscriber logical_camera_17_sub = node.subscribe("/ariac/logical_camera_17", 1000, logicalCallback);
+    ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
     GantryControl gantry(node);
     gantry.init();
     gantry.goToPresetLocation(gantry.start_);
