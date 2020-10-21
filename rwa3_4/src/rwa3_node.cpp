@@ -74,16 +74,16 @@ void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
         ROS_INFO_STREAM("Msg empty");
 }
 
-bool checkPartPoseValidity (part part_in_tray, 
+bool checkPartPoseValidity (geometry_msgs::Pose part_in_tray, 
                             geometry_msgs::Pose quality1_model) {
     ROS_INFO_STREAM("Order part location to be placed to: " 
-                    << part_in_tray.pose.position.x << std::endl
-                    << part_in_tray.pose.position.y << std::endl 
-                    << part_in_tray.pose.position.z << std::endl
-                    << part_in_tray.pose.orientation.x << std::endl
-                    << part_in_tray.pose.orientation.y << std::endl
-                    << part_in_tray.pose.orientation.z << std::endl
-                    << part_in_tray.pose.orientation.w);
+                    << part_in_tray.position.x << std::endl
+                    << part_in_tray.position.y << std::endl 
+                    << part_in_tray.position.z << std::endl
+                    << part_in_tray.orientation.x << std::endl
+                    << part_in_tray.orientation.y << std::endl
+                    << part_in_tray.orientation.z << std::endl
+                    << part_in_tray.orientation.w);
     ROS_INFO_STREAM("Order part pose detected from quality sensor: " 
                     << quality1_model.position.x << std::endl
                     << quality1_model.position.y << std::endl
@@ -97,15 +97,15 @@ bool checkPartPoseValidity (part part_in_tray,
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener(tfBuffer);
     ros::Duration timeout(3.0);
-    bool transform_exists = tfBuffer.canTransform("world", "quality_control_sensor_1_frame", ros::Time(0), timeout);
+    bool transform_exists = tfBuffer.canTransform("world", "logical_camera_17_frame", ros::Time(0), timeout);
     if (transform_exists)
-        transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_1_frame", ros::Time(0));
+        transformStamped = tfBuffer.lookupTransform("world", "logical_camera_17_frame", ros::Time(0));
     else
         ROS_INFO_STREAM("Cannot transform from quality_control_sensor_1_frame to world");
     geometry_msgs::PoseStamped new_pose;
     new_pose.header.seq = 1;
     new_pose.header.stamp = ros::Time(0);
-    new_pose.header.frame_id = "quality_control_sensor_1_frame";
+    new_pose.header.frame_id = "logical_camera_17_frame";
     new_pose.pose = quality1_model;
     tf2::doTransform(new_pose, new_pose, transformStamped);
     ROS_INFO_STREAM("Transformed order part pose detected from quality sensor: " 
@@ -116,6 +116,13 @@ bool checkPartPoseValidity (part part_in_tray,
                     << new_pose.pose.orientation.y << std::endl
                     << new_pose.pose.orientation.z << std::endl
                     << new_pose.pose.orientation.w);
+    float xdiff = new_pose.pose.position.x - part_in_tray.position.x;
+    float ydiff = new_pose.pose.position.y - part_in_tray.position.y;
+    float zdiff = new_pose.pose.position.z - part_in_tray.position.z;
+    if (std::abs(xdiff) < 0.1 && std::abs(ydiff) < 0.1 && std::abs(zdiff < 0.1))
+        return true;
+    else
+        return false;
 }
 
 int main(int argc, char ** argv) {
@@ -131,7 +138,7 @@ int main(int argc, char ** argv) {
     comp.getClock();
 
     ros::Subscriber order_sub = node.subscribe("/ariac/orders", 1000, orderCallback);
-    ros::Subscriber quality1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
+    ros::Subscriber quality1_sub = node.subscribe("/ariac/logical_camera_17", 1000, qualityCallback);
     GantryControl gantry(node);
     gantry.init();
     gantry.goToPresetLocation(gantry.start_);
@@ -170,9 +177,11 @@ int main(int argc, char ** argv) {
     //--Go place the part
     gantry.placePart(part_in_tray, "agv2");
 
-    bool placed_status = checkPartPoseValidity(part_in_tray, quality1_model);
+    geometry_msgs::Pose part_in_tray_world = gantry.getTargetWorldPose(part_in_tray.pose,
+                                                                               "agv2");
+    bool placed_status = checkPartPoseValidity(part_in_tray_world, quality1_model);
 
-    ROS_INFO_STREAM("Part placed correctly: " << placed_status);
+    ROS_INFO_STREAM("Is part placed correctly?:" << ((placed_status == 1) ? " Yes":" No"));
 
     comp.endCompetition();
     spinner.stop();
