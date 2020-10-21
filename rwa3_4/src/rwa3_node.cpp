@@ -37,14 +37,12 @@
 #include <tf2/LinearMath/Quaternion.h>
 
 // To store quality sensor model detected
-nist_gear::LogicalCameraImage quality1_model;
+geometry_msgs::Pose quality1_model;
 
 void transform_pose(geometry_msgs::Pose input_pose, 
                     std::string to_frame, 
                     std::string from_frame) {
-    geometry_msgs::TransformStamped transformStamped;
-    tf2_ros::Buffer tfBuffer;
-    transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_1_frame", ros::Time(0));
+    
 }
 
 void orderCallback(const nist_gear::Order& ordermsg) {
@@ -69,30 +67,57 @@ void orderCallback(const nist_gear::Order& ordermsg) {
 }
 
 void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
-    quality1_model = msg;
+    if (msg.models.size() != 0) {
+        ROS_INFO_STREAM("Msg not emplty");
+        quality1_model = (msg.models[0]).pose;
+    } else
+        ROS_INFO_STREAM("Msg empty");
 }
 
 bool checkPartPoseValidity (part part_in_tray, 
-                            nist_gear::LogicalCameraImage quality1_model) {
+                            geometry_msgs::Pose quality1_model) {
     ROS_INFO_STREAM("Order part location to be placed to: " 
-                    << part_in_tray.pose.position.x 
-                    << part_in_tray.pose.position.y
-                    << part_in_tray.pose.position.z
-                    << part_in_tray.pose.orientation.x
-                    << part_in_tray.pose.orientation.y
-                    << part_in_tray.pose.orientation.z
+                    << part_in_tray.pose.position.x << std::endl
+                    << part_in_tray.pose.position.y << std::endl 
+                    << part_in_tray.pose.position.z << std::endl
+                    << part_in_tray.pose.orientation.x << std::endl
+                    << part_in_tray.pose.orientation.y << std::endl
+                    << part_in_tray.pose.orientation.z << std::endl
                     << part_in_tray.pose.orientation.w);
     ROS_INFO_STREAM("Order part pose detected from quality sensor: " 
-                    << quality1_model.pose.position.x 
-                    << quality1_model.pose.position.y
-                    << quality1_model.pose.position.z
-                    << quality1_model.pose.orientation.x
-                    << quality1_model.pose.orientation.y
-                    << quality1_model.pose.orientation.z
-                    << quality1_model.pose.orientation.w);
+                    << quality1_model.position.x << std::endl
+                    << quality1_model.position.y << std::endl
+                    << quality1_model.position.z << std::endl
+                    << quality1_model.orientation.x << std::endl
+                    << quality1_model.orientation.y << std::endl
+                    << quality1_model.orientation.z << std::endl
+                    << quality1_model.orientation.w); 
     // Transform pose detected from quality sensor to world frame
-    
+    geometry_msgs::TransformStamped transformStamped;
+    tf2_ros::Buffer tfBuffer;
+    tf2_ros::TransformListener tfListener(tfBuffer);
+    ros::Duration timeout(3.0);
+    bool transform_exists = tfBuffer.canTransform("world", "quality_control_sensor_1_frame", ros::Time(0), timeout);
+    if (transform_exists)
+        transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_1_frame", ros::Time(0));
+    else
+        ROS_INFO_STREAM("Cannot transform from quality_control_sensor_1_frame to world");
+    geometry_msgs::PoseStamped new_pose;
+    new_pose.header.seq = 1;
+    new_pose.header.stamp = ros::Time(0);
+    new_pose.header.frame_id = "quality_control_sensor_1_frame";
+    new_pose.pose = quality1_model;
+    tf2::doTransform(new_pose, new_pose, transformStamped);
+    ROS_INFO_STREAM("Transformed order part pose detected from quality sensor: " 
+                    << new_pose.pose.position.x << std::endl
+                    << new_pose.pose.position.y << std::endl
+                    << new_pose.pose.position.z << std::endl
+                    << new_pose.pose.orientation.x << std::endl
+                    << new_pose.pose.orientation.y << std::endl
+                    << new_pose.pose.orientation.z << std::endl
+                    << new_pose.pose.orientation.w);
 }
+
 int main(int argc, char ** argv) {
     ros::init(argc, argv, "rwa3_node");
     ros::NodeHandle node;
