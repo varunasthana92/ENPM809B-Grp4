@@ -43,12 +43,123 @@ void GantryControl::init() {
     start_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     start_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
+    //-- bins 1,2,5,6
+    PA_.gantry = {3.0208, -1.7029, 0.};
+    PA_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PA_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
-    bin3_.gantry = {4.0, -1.1, 0.};
-    bin3_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
-    bin3_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+    //-- bins 3,4,7,8
+    PB_.gantry = {4.9927, -1.7729, 0.};
+    PB_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PB_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
-    agv2_.gantry = {0.6, 6.9, PI};
+    //-- bins 11,12,15,16
+    PC_.gantry = {5.1227, 1.7322, 0.};
+    PC_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PC_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //-- bins 9,10,13,14
+    PD_.gantry = {3.104, 1.80, 0.};
+    PD_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PD_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 1
+    PE_.gantry = {3.1652, -4.8583, 0.};
+    PE_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PE_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 1
+    PF_.gantry = {5.0222, -4.8075, 0.};
+    PF_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PF_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 2
+    PG_.gantry = {3.0621, 4.7209, 0.};
+    PG_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PG_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 2
+    PH_.gantry = {4.49899, 4.7670, 0.};
+    PH_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PH_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 11
+    PI1_.gantry = {-13.5996, +1.9252, 0.};
+    PI1_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PI1_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 11
+    PJ_.gantry = {-15.5986, +1.8932, 0.};
+    PJ_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PJ_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 5
+    PK_.gantry = {-13.4923, -1.9666, 0.};
+    PK_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PK_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 5
+    PL_.gantry = {-15.6332, -2.0492, 0.};
+    PL_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PL_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 8
+    PM_.gantry = {-13.4923, -1.0726, 0.};
+    PM_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PM_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--shelf 8
+    PN_.gantry = {-15.5952, -1.0242, 0.};
+    PN_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    PN_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Conveyor belt right side
+    WP1_.gantry = {0.0327, 1.5795, 0.};
+    WP1_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP1_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Conveyor belt left side
+    WP2_.gantry = {-0.07887, -1.4296, 0.};
+    WP2_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP2_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near AGV1
+    WP3_.gantry = {-0.2094, -4.9560, 0.};
+    WP3_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP3_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near AGV2
+    WP4_.gantry = {0.3167, 4.7697, 0.};
+    WP4_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP4_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near shelf 11
+    WP5_.gantry = {-14.6044, 1.5547, 0.};
+    WP5_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP5_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near shelf 5
+    WP6_.gantry = {-14.6396, -1.5451, 0.};
+    WP6_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP6_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near shelf 5
+    WP7_.gantry = {3.9791, -5.7986, 0.};
+    WP7_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP7_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--Near shelf 5
+    WP8_.gantry = {4.0267, 5.5945, 0.};
+    WP8_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    WP8_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--AGV1
+    agv1_.gantry = {0.02377, -6.3337, PI};
+    agv1_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    agv1_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    //--AGV2
+    agv2_.gantry = {0.02377, 6.3337, PI};
     agv2_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     agv2_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 

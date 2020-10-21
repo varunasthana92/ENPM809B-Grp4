@@ -64,7 +64,30 @@ class GantryControl {
     geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
     //--preset locations;
     start start_;
-    bin3 bin3_;
+
+    PA PA_;
+    PB PB_;
+    PC PC_;
+    PD PD_;
+    PE PE_;
+    PF PF_;
+    PG PG_;
+    PH PH_;
+    PI1 PI1_;
+    PJ PJ_;
+    PK PK_;
+    PL PL_;
+    PM PM_;
+    PN PN_;
+    WP1 WP1_;
+    WP2 WP2_;
+    WP3 WP3_;
+    WP4 WP4_;
+    WP5 WP5_;
+    WP6 WP6_;
+    WP7 WP7_;
+    WP7 WP8_;
+    agv1 agv1_;
     agv2 agv2_;
 
   private:

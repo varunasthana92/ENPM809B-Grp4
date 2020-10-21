@@ -91,38 +91,47 @@ int main(int argc, char ** argv) {
     gantry.init();
     gantry.goToPresetLocation(gantry.start_);
 
-    ros::spinOnce();
-    std::cout<<" Part queried: " << buildObj.order_recieved.shipments[0].products[0].type << "\n";
-    int readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
-    if(readPart){
-        std::cout << " first time Part read \n";
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
-    }
-    readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
-    if(readPart){
-        std::cout << " second time Part read \n";
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
-    }
-    
-    readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
-    if(readPart){
-        std::cout << " Part read \n";
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
-        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
-    }
-    std::cout<<"not read parts\n";
-    return 0;
+//    ros::spinOnce();
+//    std::cout<<" Part queried: " << buildObj.order_recieved.shipments[0].products[0].type << "\n";
+//    int readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
+//    if(readPart){
+//        std::cout << " first time Part read \n";
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
+//    }
+//    readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
+//    if(readPart){
+//        std::cout << " second time Part read \n";
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
+//    }
+//
+//    readPart = buildObj.queryPart(buildObj.order_recieved.shipments[0].products[0]);
+//    if(readPart){
+//        std::cout << " Part read \n";
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.frame <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.type <<std::endl;
+//        std::cout << buildObj.order_recieved.shipments[0].products[0].p.save_pose <<std::endl;
+//    }
+//    std::cout<<"not read parts\n";
+//    return 0;
 
     //--1-Read order
     //--2-Look for parts in this order
     //--We go to this bin because a camera above
     //--this bin found one of the parts in the order
-    gantry.goToPresetLocation(gantry.bin3_);
+    gantry.goToPresetLocation(gantry.PA_);
+    gantry.goToPresetLocation(gantry.PB_);
+    gantry.goToPresetLocation(gantry.PC_);
+
+    gantry.goToPresetLocation(gantry.start_);
+    gantry.goToPresetLocation(gantry.WP1_);
+    gantry.goToPresetLocation(gantry.WP4_);
+    gantry.goToPresetLocation(gantry.PG_);
+    gantry.goToPresetLocation(gantry.WP8_);
+    gantry.goToPresetLocation(gantry.agv2_);
 
 
     //--You should receive the following information from a camera

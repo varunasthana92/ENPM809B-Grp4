@@ -54,7 +54,7 @@ typedef struct PresetLocation {
     std::vector<double> gantry;
     std::vector<double> left_arm;
     std::vector<double> right_arm;
-} start, bin3, agv2;
+} start, PA, PB, PC, PD, PE, PF, PG, PH, PI1, PJ, PK, PL, PM, PN, WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, agv1, agv2;
 
 
 typedef struct Part {
