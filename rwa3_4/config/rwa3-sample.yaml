@@ -196,8 +196,8 @@ models_over_shelves:
 
 
 #Faulty products
-#faulty_products:
-#  - disk_part_blue_1
+faulty_products:
+  - gasket_part_red_5
 #  - disk_part_green_5
 
 #sensor_blackout:
