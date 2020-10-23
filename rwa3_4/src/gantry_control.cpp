@@ -512,7 +512,7 @@ bool GantryControl::move2start ( float x, float y ) {
     ROS_INFO_STREAM("Position of trg in move2start y:" << y);
     ROS_INFO_STREAM("Position of trg in move2start robot x:" << x);
     ROS_INFO_STREAM("Position of trg in move2start robot x:" << y);
-    float offset_y = 1.3;
+    float offset_y = 0.2;
     float offset_x = 0.2;
 
     // offset_y *= -1;
@@ -553,7 +553,7 @@ bool GantryControl::move2start ( float x, float y ) {
             move.left_arm = {-PI/2, -PI/2, PI/2 + PI/4, 0, 0, 0};
 
             ROS_INFO_STREAM("Position of trg in move2start y:" << move.gantry[1]);
-            ROS_INFO_STREAM("Position of trg  str_7");
+            ROS_INFO_STREAM("Position of trg  str_3");
 
             goToPresetLocation(move);
 
@@ -581,7 +581,7 @@ bool GantryControl::move2start ( float x, float y ) {
             move.left_arm = {-PI/2, -PI/2, PI/2 + PI/4, 0, 0, 0};
 
             ROS_INFO_STREAM("Position of trg in move2start y:" << move.gantry[1]);
-            ROS_INFO_STREAM("Position of trg  str_7");
+            ROS_INFO_STREAM("Position of trg  str_5");
 
             goToPresetLocation(move);
 
@@ -607,14 +607,14 @@ bool GantryControl::move2start ( float x, float y ) {
             move.gantry[0] = x;
             move.gantry[1] -= offset_y;
             move.left_arm = {-PI/2, -PI/2, PI/2 + PI/4, 0, 0, 0};
-
+            ROS_INFO_STREAM("Position of trg in move2start x:" << move.gantry[0]);
             ROS_INFO_STREAM("Position of trg in move2start y:" << move.gantry[1]);
             ROS_INFO_STREAM("Position of trg  str_7");
 
             goToPresetLocation(move);
 
             move.gantry[0] = 0;
-            move.gantry[1] -= offset_y;
+//            move.gantry[1] -= offset_y;
             move.left_arm = {-PI/2, -PI/2, PI/2 + PI/4, 0, 0, 0};
             goToPresetLocation(move);
             goToPresetLocation(start_);
@@ -661,7 +661,7 @@ bool GantryControl::move2start ( float x, float y ) {
             move.gantry[1] -= offset_y;
 
             ROS_INFO_STREAM("Position of trg in move2start y:" << move.gantry[1]);
-            ROS_INFO_STREAM("Position of trg  str_111");
+            ROS_INFO_STREAM("Position of trg  str_11");
 
             goToPresetLocation(move);
             goToPresetLocation(start_);
@@ -719,6 +719,8 @@ float GantryControl::move2trg  ( float x, float y ) {
 
     ROS_INFO_STREAM("Position of trg in move2trg y:" << y);
     ROS_INFO_STREAM("Position of trg in move2trg offset y:" << offset_y);
+    ROS_INFO_STREAM("Position of trg X: " << x);
+    ROS_INFO_STREAM("Position of trg Y:" << y);
 
     PresetLocation move, move_trg;
     move.gantry = {x,y,0};
@@ -876,10 +878,12 @@ float GantryControl::move2trg  ( float x, float y ) {
         }
         else  if( y <= 3.6 && y > 0){
             move.gantry[0] = 0;
+            ROS_INFO_STREAM("Position of trg in move2trg y (0):" << move.gantry[1]);
             move.gantry[1] -= offset_y;
 
             ROS_INFO_STREAM("Position of trg in move2trg y:" << move.gantry[1]);
             ROS_INFO_STREAM("Position of trg  trg_11");
+            ROS_INFO_STREAM("Position of value of offset_y :" << offset_y);
 
             goToPresetLocation(move);
             
