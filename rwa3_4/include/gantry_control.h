@@ -61,6 +61,7 @@ class GantryControl {
     void activateGripper(std::string gripper_id);
     void deactivateGripper(std::string gripper_id);
     void gantryGo(PresetLocation location);
+    void flipPart();
     void gantryCome(PresetLocation location);
     bool move2start ( float x, float y );
     float move2trg ( float x, float y);
@@ -75,6 +76,7 @@ class GantryControl {
     //--preset locations;
     start start_;
     bin3 bin3_;
+    flipped_pulley flipped_pulley_;
     agv1 agv1_; agv2 agv2_;
     cam1 cam1_; cam4 cam2_; cam3 cam3_; cam4 cam4_;
     cam5 cam5_; cam6 cam6_; cam7 cam7_; cam8 cam8_;
