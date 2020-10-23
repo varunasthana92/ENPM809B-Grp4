@@ -8,8 +8,30 @@
 // Variable to store if current part is faulty
 bool is_part_faulty = false;
 
+// Variable to store if part is to be flipped
+//bool part_flip_required = false;
+
 // Variable to hold faulty part pose
 geometry_msgs::Pose faulty_part_pose;
+
+void logicalCallback(const nist_gear::LogicalCameraImage& msg) {
+    if (msg.models.size() != 0) {
+        ROS_INFO_STREAM("Model type" << (msg.models[0]).type);
+        geometry_msgs::Pose model_pose = (msg.models[0]).pose;
+        tf2::Quaternion q(
+            model_pose.orientation.x,
+            model_pose.orientation.y,
+            model_pose.orientation.z,
+            model_pose.orientation.w);
+        tf2::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        ROS_INFO_STREAM("Roll: " << roll << "ROLL-PI" << roll - PI);
+        //if (roll - PI < 0.05)
+            //ROS_INFO_STREAM("Roll: inside");
+            //part_flip_required = true;
+    }
+}
 
 // Quality control sensor 1 callback
 void qualityCallback(const nist_gear::LogicalCameraImage& msg) {
@@ -77,6 +99,7 @@ GantryControl::GantryControl(ros::NodeHandle & node):
     ROS_INFO_STREAM("[GantryControl::GantryControl] constructor called... ");
 }
 
+
 void GantryControl::rotate_gantry(double angle) {
     trajectory_msgs::JointTrajectory command_msg;
     trajectory_msgs::JointTrajectoryPoint points;
@@ -128,6 +151,10 @@ void GantryControl::init() {
     start_.gantry = {0,0,0};
     start_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     start_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+
+    flipped_pulley_.gantry = {0, 0, 0};
+    flipped_pulley_.left_arm = {-1.29, -0.25, 1.63, 6.28, 1.63, 3.20};
+    flipped_pulley_.right_arm = {1.26, -3.14, -1.76, -0.13, 1.76, 0.88};
 
     bin3_.gantry = {4.0, -1.1, 0.};
     bin3_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
@@ -262,6 +289,10 @@ void GantryControl::init() {
     ROS_INFO("[GantryControl::init] Init position ready)...");
 }
 
+
+void GantryControl::flipPart() {
+    goToPresetLocation(flipped_pulley_);
+}
 
 stats GantryControl::getStats(std::string function) {
     if (function == "init") return init_;
@@ -449,6 +480,7 @@ void GantryControl::placePart(part part,
                               std::string agv, 
                               ros::NodeHandle node){
     ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
+    ros::Subscriber logical_camera_17_sub = node.subscribe("/ariac//ariac/logical_camera_17", 1000, logicalCallback);
     auto target_pose_in_tray = getTargetWorldPose(part.pose, agv);
     ROS_INFO_STREAM("Settled tray pose:" << target_pose_in_tray.position.x << " " 
                                          << target_pose_in_tray.position.y << " "
@@ -459,13 +491,19 @@ void GantryControl::placePart(part part,
     rotate_gantry(4.8);
     target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5*model_height[part.type]);
 
-    left_arm_group_.setPoseTarget(target_pose_in_tray);
-    left_arm_group_.move();
-    deactivateGripper("left_arm");
-    auto state = getGripperState("left_arm");
+    auto left_state = getGripperState("left_arm");
+    auto right_state = getGripperState("right_arm");
+    if (!left_state.attached) {
+        left_arm_group_.setPoseTarget(target_pose_in_tray);
+        left_arm_group_.move();
+    } else {
+        right_arm_group_.setPoseTarget(target_pose_in_tray);
+        right_arm_group_.move();
+    }
+    //deactivateGripper("left_arm");
     
     ros::Duration(2).sleep();
-    if (state.attached) {
+    if (left_state.attached || right_state.attached) {
         std::cout << "Part faulty: " << is_part_faulty << std::endl;
         if (is_part_faulty) {
             std::cout << "Part faulty inside: " << is_part_faulty << std::endl;
@@ -473,8 +511,10 @@ void GantryControl::placePart(part part,
             pickPart(part);
             is_part_faulty = false;
         }
-        goToPresetLocation(start_);
         deactivateGripper("left_arm");
+        deactivateGripper("right_arm");
+        goToPresetLocation(start_);
+        
     }
 }
 

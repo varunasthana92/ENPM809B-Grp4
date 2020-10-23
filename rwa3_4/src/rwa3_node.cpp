@@ -109,6 +109,10 @@ int main(int argc, char ** argv) {
             geometry_msgs::Pose robot_pose = gantry.getRobotPose();
             gantry.move2start(product.p.pose.position.x - 0.4, -Y_pose);
             // gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
+            gantry.flipPart();
+            gantry.activateGripper("right_arm");
+            gantry.deactivateGripper("left_arm");
+
             gantry.placePart(product.p, product.tray, node);
             gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
         }
