@@ -53,7 +53,6 @@ orders:
         pose:
           xyz: [0.12, 0.2, 0]
           rpy: ['pi', 0, 0]
-          # rpy: [0, 0, 0]
       part_2:
         type: disk_part_green
         pose:
@@ -96,5 +95,5 @@ models_over_shelves:
 
 #Faulty products
 faulty_products:
-  - disk_part_green_2
+  - disk_part_green_9
   - disk_part_green_5

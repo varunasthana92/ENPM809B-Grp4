@@ -51,7 +51,7 @@ class GantryControl {
 
 //    bool pickPart(part part, std::string arm_name);
     bool pickPart(part part);
-    bool placePart(part part, std::string agv, ros::NodeHandle node);
+    bool placePart(part part, std::string agv, std::string arm, ros::NodeHandle node);
     
     /// Send command message to robot controller
     bool send_command(trajectory_msgs::JointTrajectory command_msg);
@@ -61,7 +61,7 @@ class GantryControl {
     void deactivateGripper(std::string gripper_id);
     void gantryGo(PresetLocation location);
     void gantryCome(PresetLocation location);
-    void flipPart();
+    void flipPart(Part &part);
     bool move2start ( float x, float y );
     float move2trg ( float x, float y);
 
@@ -71,7 +71,7 @@ class GantryControl {
     }
 
     nist_gear::VacuumGripperState getGripperState(std::string arm_name);
-    geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
+    geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv, std::string arm);
     //--preset locations;
     start start_;
     bin3 bin3_;

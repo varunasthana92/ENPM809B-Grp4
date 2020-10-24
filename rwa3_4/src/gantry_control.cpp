@@ -141,7 +141,8 @@ void GantryControl::init() {
     agv2_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     agv2_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
-    agv2_right_.gantry = {0.6, 6.9, 0};
+    agv2_right_.gantry = {-0.6, 6.9, PI};
+    // agv2_right_.gantry = {0.6, 6.9, 0};
     agv2_right_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     agv2_right_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
     
@@ -289,7 +290,7 @@ stats GantryControl::getStats(std::string function) {
 }
 
 geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target,
-                                                      std::string agv){
+                                                      std::string agv, std::string arm){
     static tf2_ros::StaticTransformBroadcaster br;
     geometry_msgs::TransformStamped transformStamped;
 
@@ -299,7 +300,7 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
     else
         kit_tray = "kit_tray_2";
     transformStamped.header.stamp = ros::Time::now();
-    transformStamped.header.frame_id = "kit_tray_2";
+    transformStamped.header.frame_id = kit_tray;
     transformStamped.child_frame_id = "target_frame";
     transformStamped.transform.translation.x = target.position.x;
     transformStamped.transform.translation.y = target.position.y;
@@ -321,6 +322,12 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
 
     geometry_msgs::TransformStamped world_target_tf;
     geometry_msgs::TransformStamped ee_target_tf;
+
+    std::string ee_link;
+    if (arm.compare("left")==0)
+        ee_link = "left_ee_link";
+    else
+        ee_link = "right_ee_link";
     for (int i=0; i< 10; i++) {
         try {
             world_target_tf = tfBuffer.lookupTransform("world", "target_frame",
@@ -333,7 +340,7 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
         }
 
         try {
-            ee_target_tf = tfBuffer.lookupTransform("target_frame", "left_ee_link",
+            ee_target_tf = tfBuffer.lookupTransform("target_frame", ee_link,
                                                  ros::Time(0), timeout);
         }
         catch (tf2::TransformException &ex) {
@@ -355,8 +362,13 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
     return world_target;
 }
 
-void GantryControl::flipPart() {
+void GantryControl::flipPart(Part &part) {
     goToPresetLocation(flipped_pulley_);
+    part.pose.orientation.x = 0;
+    part.pose.orientation.y = 0;
+    part.pose.orientation.z = 0;
+    part.pose.orientation.w = 1;
+    return;
 }
 
 bool GantryControl::pickPart(part part){
@@ -462,13 +474,24 @@ bool GantryControl::pickPart(part part){
 }
 
 bool GantryControl::placePart(part part,
-                              std::string agv, 
+                              std::string agv,
+                              std::string arm,
                               ros::NodeHandle node){
 ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
-auto target_pose_in_tray = getTargetWorldPose(part.pose, agv);
+
+ROS_INFO_STREAM("Part relative tray pose:" << part.pose.position.x << " " 
+                                        << part.pose.position.y << " "
+                                        << part.pose.position.z << " "
+                                        << part.pose.orientation.x << " "
+                                        << part.pose.orientation.y << " "
+                                        << part.pose.orientation.z << " "
+                                        << part.pose.orientation.w);
+
+auto target_pose_in_tray = getTargetWorldPose(part.pose, agv, arm);
 ROS_INFO_STREAM("Settled tray pose:" << target_pose_in_tray.position.x << " " 
                                         << target_pose_in_tray.position.y << " "
                                         << target_pose_in_tray.position.z << " "
+                                        << target_pose_in_tray.orientation.x << " "
                                         << target_pose_in_tray.orientation.y << " "
                                         << target_pose_in_tray.orientation.z << " "
                                         << target_pose_in_tray.orientation.w);

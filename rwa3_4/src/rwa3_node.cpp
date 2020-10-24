@@ -97,6 +97,7 @@ int main(int argc, char ** argv) {
     //--We go to this bin because a camera above
     //--this bin found one of the parts in the order
     
+    std::string arm = "left";
     for(auto &shipment: buildObj.order_recieved.shipments) {
         for(auto &product: shipment.products) {
             do {
@@ -113,11 +114,12 @@ int main(int argc, char ** argv) {
                 product.p.pose=product.pose;
                 if (product.p.pose.orientation.x == 1 || product.p.pose.orientation.x == -1) {
                     std::cout << "product.p.pose.orientation.x inside: " << product.p.pose.orientation.x << std::endl;
-                    gantry.flipPart();
+                    gantry.flipPart(product.p);
+                    arm = "right";
                     gantry.activateGripper("right_arm");
                     gantry.deactivateGripper("left_arm");
                 }
-                }while(!gantry.placePart(product.p, shipment.agv_id, node));
+                }while(!gantry.placePart(product.p, shipment.agv_id, arm, node));
 
 //            gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
         }
