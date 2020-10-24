@@ -85,8 +85,8 @@ int main(int argc, char ** argv) {
 
     ros::Subscriber order_sub = node.subscribe("/ariac/orders", 1000, &BuildClass::orderCallback, &buildObj);
     
-
     GantryControl gantry(node);
+    ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, &GantryControl::qualityCallback, &gantry);
     gantry.init();
     gantry.goToPresetLocation(gantry.start_);
 
@@ -114,7 +114,7 @@ int main(int argc, char ** argv) {
                 product.p.pose=product.pose;
                 if (product.p.pose.orientation.x == 1 || product.p.pose.orientation.x == -1) {
                     std::cout << "product.p.pose.orientation.x inside: " << product.p.pose.orientation.x << std::endl;
-                    gantry.flipPart(product.p);
+                    gantry.flipPart();
                     arm = "right";
                     gantry.activateGripper("right_arm");
                     gantry.deactivateGripper("left_arm");
@@ -123,9 +123,10 @@ int main(int argc, char ** argv) {
 
 //            gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
         }
+        gantry.goToPresetLocation(gantry.start_);
         comp.shipAgv(shipment.agv_id, shipment.shipment_type);
     }
-    exit(0);
+
     // for(int i =0; i < buildObj.order_recieved.shipments.size(); ++i){
     //     for(int j =0; j < buildObj.order_recieved.shipments[i].products.size(); ++j){
     //         ProdGantryControl
