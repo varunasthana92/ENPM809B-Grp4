@@ -141,10 +141,17 @@ void GantryControl::init() {
     agv2_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     agv2_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
+    agv2_right_.gantry = {0.6, 6.9, 0};
+    agv2_right_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
+    agv2_right_.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
+    
     agv2_org.gantry = {0.4, 6.9, PI};
     agv2_org.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
     agv2_org.right_arm = {PI, -PI/4, PI/2, -PI/4, PI/2, 0};
 
+    flipped_pulley_.gantry = {0, 0, 0};
+    flipped_pulley_.left_arm = {-1.29, -0.25, 1.63, 6.28, 1.63, 3.20};
+    flipped_pulley_.right_arm = {1.26, -3.14, -1.76, -0.13, 1.76, 0.88};
 
     // cam1_.gantry = {3.104, 1.80, 0.};
     // cam1_.left_arm = {0.0, -PI/4, PI/2, -PI/4, PI/2, 0};
@@ -348,6 +355,10 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
     return world_target;
 }
 
+void GantryControl::flipPart() {
+    goToPresetLocation(flipped_pulley_);
+}
+
 bool GantryControl::pickPart(part part){
     //--Activate gripper
     activateGripper("left_arm");
@@ -453,35 +464,63 @@ bool GantryControl::pickPart(part part){
 bool GantryControl::placePart(part part,
                               std::string agv, 
                               ros::NodeHandle node){
-    ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
-    auto target_pose_in_tray = getTargetWorldPose(part.pose, agv);
-    ROS_INFO_STREAM("Settled tray pose:" << target_pose_in_tray.position.x << " " 
-                                         << target_pose_in_tray.position.y << " "
-                                         << target_pose_in_tray.position.z);
-    ros::Duration(3.0).sleep();
-    goToPresetLocation(agv2_);
-    ROS_INFO_STREAM("Trying to rotate gantry");
-    rotate_gantry(4.8);
-    target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5*model_height[part.type]);
+ros::Subscriber quality_sensor_1_sub = node.subscribe("/ariac/quality_control_sensor_1", 1000, qualityCallback);
+auto target_pose_in_tray = getTargetWorldPose(part.pose, agv);
+ROS_INFO_STREAM("Settled tray pose:" << target_pose_in_tray.position.x << " " 
+                                        << target_pose_in_tray.position.y << " "
+                                        << target_pose_in_tray.position.z << " "
+                                        << target_pose_in_tray.orientation.y << " "
+                                        << target_pose_in_tray.orientation.z << " "
+                                        << target_pose_in_tray.orientation.w);
+ros::Duration(3.0).sleep();
+auto left_state = getGripperState("left_arm");
+auto right_state = getGripperState("right_arm");
+target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5*model_height[part.type]);
 
+if (left_state.attached) {
+    goToPresetLocation(agv2_);
+    ROS_INFO_STREAM("Left Settled tray pose:" << target_pose_in_tray.position.x << " " 
+                                        << target_pose_in_tray.position.y << " "
+                                        << target_pose_in_tray.position.z << " "
+                                        << target_pose_in_tray.orientation.x << " "
+                                        << target_pose_in_tray.orientation.y << " "
+                                        << target_pose_in_tray.orientation.z << " "
+                                        << target_pose_in_tray.orientation.w);
     left_arm_group_.setPoseTarget(target_pose_in_tray);
     left_arm_group_.move();
     deactivateGripper("left_arm");
+} else if (right_state.attached){
+    goToPresetLocation(agv2_right_);
+    ROS_INFO_STREAM("Right Settled tray pose:" << target_pose_in_tray.position.x << " " 
+                                        << target_pose_in_tray.position.y << " "
+                                        << target_pose_in_tray.position.z << " "
+                                        << target_pose_in_tray.orientation.x << " "
+                                        << target_pose_in_tray.orientation.y << " "
+                                        << target_pose_in_tray.orientation.z << " "
+                                        << target_pose_in_tray.orientation.w);
+    right_arm_group_.setPoseTarget(target_pose_in_tray);
+    right_arm_group_.move();
+    deactivateGripper("right_arm");
+} 
+
+//ROS_INFO_STREAM("Trying to rotate gantry");
+//rotate_gantry(4.8);
+
 //    auto state = getGripperState("left_arm");
-    
-    ros::Duration(2).sleep();
+
+ros::Duration(2).sleep();
 //    if (state.attached) {
 //        std::cout << "Part faulty: " << is_part_faulty << std::endl;
-    if (is_part_faulty) {
-        std::cout << "Part faulty inside: " << is_part_faulty << std::endl;
-        part.pose = faulty_part_pose;
-        pickPart(part);
-        is_part_faulty = false;
-        goToPresetLocation(agv2_org);
-        goToPresetLocation(start_);
-        deactivateGripper("left_arm");
-        return false;
-    }
+if (is_part_faulty) {
+    std::cout << "Part faulty inside: " << is_part_faulty << std::endl;
+    part.pose = faulty_part_pose;
+    pickPart(part);
+    is_part_faulty = false;
+    goToPresetLocation(agv2_org);
+    goToPresetLocation(start_);
+    deactivateGripper("left_arm");
+    return false;
+}
 //        goToPresetLocation(agv2_org);
 
 //    }

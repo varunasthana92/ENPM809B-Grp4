@@ -107,10 +107,16 @@ int main(int argc, char ** argv) {
                 float Y_pose = gantry.move2trg(product.p.pose.position.x, -product.p.pose.position.y );
                 // gantry.gantryGo(gantry.preLoc[product.p.camFrame]);
                 gantry.pickPart(product.p);
-                geometry_msgs::Pose robot_pose = gantry.getRobotPose();
+                //geometry_msgs::Pose robot_pose = gantry.getRobotPose();
                 gantry.move2start(product.p.pose.position.x - 0.4, -Y_pose);
                 // gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
                 product.p.pose=product.pose;
+                if (product.p.pose.orientation.x == 1 || product.p.pose.orientation.x == -1) {
+                    std::cout << "product.p.pose.orientation.x inside: " << product.p.pose.orientation.x << std::endl;
+                    gantry.flipPart();
+                    gantry.activateGripper("right_arm");
+                    gantry.deactivateGripper("left_arm");
+                }
                 }while(!gantry.placePart(product.p, shipment.agv_id, node));
 
 //            gantry.gantryCome(gantry.preLoc[product.p.camFrame]);
