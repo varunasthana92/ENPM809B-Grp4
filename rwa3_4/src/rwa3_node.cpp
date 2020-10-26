@@ -126,26 +126,7 @@ int main(int argc, char ** argv) {
         gantry.goToPresetLocation(gantry.start_);
         comp.shipAgv(shipment.agv_id, shipment.shipment_type);
     }
-
-    // for(int i =0; i < buildObj.order_recieved.shipments.size(); ++i){
-    //     for(int j =0; j < buildObj.order_recieved.shipments[i].products.size(); ++j){
-    //         ProdGantryControl
-    //         PresetLocation tempPose = gantry.cam4_;
-    //         tempPose.gantry[0] = my_part.pose.position.x - 0.4;
-    //         tempPose.gantry[1] = -my_part.pose.position.y;
-
-    //         gantry.goToPresetLocation(tempPose);
-    //         part part_in_tray;
-    //         part_in_tray.pose = currProd.pose;
-
-    //         gantry.pickPart(my_part);
-
-    //         std::string agv_to_build =  buildObj.order_recieved.shipments[i].agv_id;
-    //         gantry.placePart(buildObj.order_recieved.shipments[i].products[j].p, "agv2");
-    //         int temp;
-    //         std::cin >> temp;
-    //     }
-    // }
+    
     // gantry.goToPresetLocation(gantry.bin3_);
 
 
